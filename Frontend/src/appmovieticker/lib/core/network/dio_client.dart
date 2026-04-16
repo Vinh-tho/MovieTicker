@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
-import 'dart:io';
 import '../../core/constants/api_constants.dart';
 import '../../features/auth/data/datasources/auth_local_datasource.dart';
+import 'http_client_config_stub.dart'
+    if (dart.library.io) 'http_client_config_io.dart'
+    if (dart.library.html) 'http_client_config_web.dart';
 
 class DioClient {
   final AuthLocalDataSource localDataSource;
@@ -17,17 +18,7 @@ class DioClient {
       ),
     );
 
-    if (dio.httpClientAdapter is IOHttpClientAdapter) {
-      final adapter = dio.httpClientAdapter as IOHttpClientAdapter;
-      adapter.createHttpClient = () {
-        final client = HttpClient();
-        // Support local development certificate on localhost.
-        client.badCertificateCallback = (cert, host, port) {
-          return host == 'localhost' || host == '127.0.0.1' || host == '10.0.2.2';
-        };
-        return client;
-      };
-    }
+    configureHttpClientForPlatform(dio);
 
     dio.interceptors.add(
       InterceptorsWrapper(
