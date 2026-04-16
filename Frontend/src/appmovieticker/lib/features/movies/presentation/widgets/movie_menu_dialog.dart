@@ -18,16 +18,20 @@ Future<void> showMovieMenuDialog(
   final screenSize = MediaQuery.sizeOf(context);
   final menuWidth = screenSize.width * 0.7;
   final isLoggedIn = token != null && token.isNotEmpty;
-  final displayName = (profile?['fullName']?.toString().trim().isNotEmpty ?? false)
+  final displayName =
+      (profile?['fullName']?.toString().trim().isNotEmpty ?? false)
       ? profile!['fullName'].toString().trim()
       : 'Thành viên 67CS';
   final memberId = profile?['id']?.toString() ?? '000001';
   final avatarUrl =
-      (profile?['avatarUrl'] ?? profile?['avatar'] ?? profile?['imageUrl'])?.toString().trim();
+      (profile?['avatarUrl'] ?? profile?['avatar'] ?? profile?['imageUrl'])
+          ?.toString()
+          .trim();
   final hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
   final safeAvatarUrl = avatarUrl ?? '';
   const guestAvatar = 'assets/images/avatramacdinh.png';
-  const memberFallbackAvatar = 'assets/images/—Pngtree—coming soon movie in cinema_1157635.png';
+  const memberFallbackAvatar =
+      'assets/images/—Pngtree—coming soon movie in cinema_1157635.png';
   final fallbackAvatar = isLoggedIn ? memberFallbackAvatar : guestAvatar;
 
   await showGeneralDialog<void>(
@@ -42,7 +46,12 @@ Future<void> showMovieMenuDialog(
           color: Colors.transparent,
           child: Container(
             width: menuWidth,
-            padding: EdgeInsets.fromLTRB(12 * scale, 28 * scale, 12 * scale, 12 * scale),
+            padding: EdgeInsets.fromLTRB(
+              12 * scale,
+              28 * scale,
+              12 * scale,
+              12 * scale,
+            ),
             decoration: BoxDecoration(
               color: const Color(0xB3000000),
               borderRadius: BorderRadius.circular(22 * scale),
@@ -50,6 +59,23 @@ Future<void> showMovieMenuDialog(
             ),
             child: Column(
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _TopActionIcon(
+                      icon: Icons.notifications_none_rounded,
+                      scale: scale,
+                      badgeLabel: 'NEW',
+                      onTap: () => Navigator.of(dialogContext).pop(),
+                    ),
+                    _TopActionIcon(
+                      icon: Icons.settings_outlined,
+                      scale: scale,
+                      onTap: () => Navigator.of(dialogContext).pop(),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8 * scale),
                 SizedBox(
                   width: 70 * scale,
                   height: 70 * scale,
@@ -58,7 +84,8 @@ Future<void> showMovieMenuDialog(
                         ? Image.network(
                             safeAvatarUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, st) => Image.asset(fallbackAvatar, fit: BoxFit.cover),
+                            errorBuilder: (ctx, err, st) =>
+                                Image.asset(fallbackAvatar, fit: BoxFit.cover),
                           )
                         : Image.asset(fallbackAvatar, fit: BoxFit.cover),
                   ),
@@ -68,7 +95,11 @@ Future<void> showMovieMenuDialog(
                   Text(
                     displayName,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 15 * scale, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15 * scale,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   SizedBox(height: 8 * scale),
                   Container(
@@ -84,7 +115,11 @@ Future<void> showMovieMenuDialog(
                       children: [
                         Text(
                           'ID : $memberId',
-                          style: TextStyle(color: Colors.white, fontSize: 14 * scale, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14 * scale,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         SizedBox(height: 6 * scale),
                         Text(
@@ -108,7 +143,11 @@ Future<void> showMovieMenuDialog(
                           scale: scale,
                           onTap: () {
                             Navigator.of(dialogContext).pop();
-                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage()));
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginPage(),
+                              ),
+                            );
                           },
                         ),
                       ),
@@ -119,7 +158,11 @@ Future<void> showMovieMenuDialog(
                           scale: scale,
                           onTap: () {
                             Navigator.of(dialogContext).pop();
-                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterPage()));
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const RegisterPage(),
+                              ),
+                            );
                           },
                         ),
                       ),
@@ -136,7 +179,11 @@ Future<void> showMovieMenuDialog(
                         onTap: () => Navigator.of(dialogContext).pop(),
                       ),
                     ),
-                    Container(width: 1, height: 20 * scale, color: const Color(0x55FFFFFF)),
+                    Container(
+                      width: 1,
+                      height: 20 * scale,
+                      color: const Color(0x55FFFFFF),
+                    ),
                     Expanded(
                       child: _MenuTextButton(
                         label: 'Đặt vé theo rạp',
@@ -144,7 +191,9 @@ Future<void> showMovieMenuDialog(
                         onTap: () {
                           Navigator.of(dialogContext).pop();
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const NearbyCinemasPage()),
+                            MaterialPageRoute(
+                              builder: (_) => const NearbyCinemasPage(),
+                            ),
                           );
                         },
                       ),
@@ -167,7 +216,9 @@ Future<void> showMovieMenuDialog(
                         onTap: () {
                           Navigator.of(dialogContext).pop();
                           if (context.mounted) {
-                            Navigator.of(context).popUntil((route) => route.isFirst);
+                            Navigator.of(
+                              context,
+                            ).popUntil((route) => route.isFirst);
                           }
                         },
                       ),
@@ -178,7 +229,11 @@ Future<void> showMovieMenuDialog(
                         onTap: () {
                           Navigator.of(dialogContext).pop();
                           if (!isLoggedIn) {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginPage()));
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginPage(),
+                              ),
+                            );
                           }
                         },
                       ),
@@ -189,14 +244,36 @@ Future<void> showMovieMenuDialog(
                         onTap: () {
                           Navigator.of(dialogContext).pop();
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const NearbyCinemasPage()),
+                            MaterialPageRoute(
+                              builder: (_) => const NearbyCinemasPage(),
+                            ),
                           );
                         },
                       ),
-                      _MenuIconItem(icon: Icons.card_giftcard_outlined, label: 'Ưu đãi', scale: scale, onTap: () => Navigator.of(dialogContext).pop()),
-                      _MenuIconItem(icon: Icons.confirmation_num_outlined, label: 'Vé của tôi', scale: scale, onTap: () => Navigator.of(dialogContext).pop()),
-                      _MenuIconItem(icon: Icons.redeem_outlined, label: 'Đổi ưu đãi', scale: scale, onTap: () => Navigator.of(dialogContext).pop()),
-                      _MenuIconItem(icon: Icons.store_outlined, label: 'Store', scale: scale, onTap: () => Navigator.of(dialogContext).pop()),
+                      _MenuIconItem(
+                        icon: Icons.card_giftcard_outlined,
+                        label: 'Ưu đãi',
+                        scale: scale,
+                        onTap: () => Navigator.of(dialogContext).pop(),
+                      ),
+                      _MenuIconItem(
+                        icon: Icons.confirmation_num_outlined,
+                        label: 'Vé của tôi',
+                        scale: scale,
+                        onTap: () => Navigator.of(dialogContext).pop(),
+                      ),
+                      _MenuIconItem(
+                        icon: Icons.redeem_outlined,
+                        label: 'Đổi ưu đãi',
+                        scale: scale,
+                        onTap: () => Navigator.of(dialogContext).pop(),
+                      ),
+                      _MenuIconItem(
+                        icon: Icons.store_outlined,
+                        label: 'Store',
+                        scale: scale,
+                        onTap: () => Navigator.of(dialogContext).pop(),
+                      ),
                       const SizedBox.shrink(),
                       const SizedBox.shrink(),
                     ],
@@ -238,7 +315,10 @@ class _MenuTextButton extends StatelessWidget {
       onPressed: onTap,
       style: TextButton.styleFrom(
         foregroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(vertical: 8 * scale, horizontal: 8 * scale),
+        padding: EdgeInsets.symmetric(
+          vertical: 8 * scale,
+          horizontal: 8 * scale,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10 * scale),
           side: const BorderSide(color: Color(0x55FFFFFF)),
@@ -286,11 +366,7 @@ class _MenuIconItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(10 * scale),
               border: Border.all(color: const Color(0x55FFFFFF)),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 20 * scale,
-            ),
+            child: Icon(icon, color: Colors.white, size: 20 * scale),
           ),
           SizedBox(height: 6 * scale),
           Text(
@@ -306,6 +382,68 @@ class _MenuIconItem extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TopActionIcon extends StatelessWidget {
+  const _TopActionIcon({
+    required this.icon,
+    required this.scale,
+    required this.onTap,
+    this.badgeLabel,
+  });
+
+  final IconData icon;
+  final double scale;
+  final VoidCallback onTap;
+  final String? badgeLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10 * scale),
+          child: Container(
+            width: 42 * scale,
+            height: 42 * scale,
+            decoration: BoxDecoration(
+              color: const Color(0x33000000),
+              borderRadius: BorderRadius.circular(10 * scale),
+              border: Border.all(color: const Color(0x55FFFFFF)),
+            ),
+            child: Icon(icon, color: Colors.white, size: 24 * scale),
+          ),
+        ),
+        if (badgeLabel != null)
+          Positioned(
+            top: -5 * scale,
+            right: -10 * scale,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 5 * scale,
+                vertical: 2 * scale,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF2D2D),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white, width: 0.7),
+              ),
+              child: Text(
+                badgeLabel!,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 7 * scale,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
