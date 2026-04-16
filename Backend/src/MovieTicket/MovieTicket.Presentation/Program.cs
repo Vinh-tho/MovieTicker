@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Data.SqlClient;
 using DotNetEnv;
 using Serilog;
 using MovieTicket.Application.Services.Implementations.Movie;
@@ -21,8 +22,20 @@ using MovieTicket.Domain.IResponsitories.ICinema;
 using MovieTicket.Application.Services.Implementations.Cinema;
 using MovieTicket.Application.Services.IServices.ICinema;
 
-// Load .env file
-Env.Load();
+// Load .env from common run locations.
+var currentDirectory = Directory.GetCurrentDirectory();
+var envCandidates = new[]
+{
+    Path.Combine(currentDirectory, ".env"),
+    Path.GetFullPath(Path.Combine(currentDirectory, "..", ".env")),
+    Path.GetFullPath(Path.Combine(currentDirectory, "..", "..", ".env"))
+};
+
+var envFile = envCandidates.FirstOrDefault(File.Exists);
+if (!string.IsNullOrWhiteSpace(envFile))
+{
+    Env.Load(envFile);
+}
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -35,25 +48,31 @@ try
     var builder = WebApplication.CreateBuilder(args);
     builder.Host.UseSerilog();
 
-    // Override configuration with environment variables
-var config = builder.Configuration;
-config.AddEnvironmentVariables();
+    // Override configuration with environment variables.
+    var config = builder.Configuration;
+    config.AddEnvironmentVariables();
 
-// Build connection string: prefer .env parts, fallback to appsettings connection string
-var envDbServer = Environment.GetEnvironmentVariable("DB_SERVER");
-var envDbName = Environment.GetEnvironmentVariable("DB_NAME");
-var envDbUser = Environment.GetEnvironmentVariable("DB_USER");
-var envDbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
-var envDbEncrypt = Environment.GetEnvironmentVariable("DB_ENCRYPT") ?? "false";
-var envTrustedConnection = Environment.GetEnvironmentVariable("DB_TRUSTED_CONNECTION") ?? "false";
+    // Build connection string: prefer DB_* vars from .env, fallback to appsettings.
+    var envDbServer = Environment.GetEnvironmentVariable("DB_SERVER");
+    var envDbName = Environment.GetEnvironmentVariable("DB_NAME");
+    var envDbUser = Environment.GetEnvironmentVariable("DB_USER");
+    var envDbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+    var envDbEncrypt = Environment.GetEnvironmentVariable("DB_ENCRYPT") ?? "false";
+    var envTrustedConnection = Environment.GetEnvironmentVariable("DB_TRUSTED_CONNECTION") ?? "false";
 
-var hasEnvDbConfig = !string.IsNullOrWhiteSpace(envDbServer)
-    && !string.IsNullOrWhiteSpace(envDbName);
+    var hasEnvDbConfig = !string.IsNullOrWhiteSpace(envDbServer)
+        && !string.IsNullOrWhiteSpace(envDbName);
 
-var connectionString = hasEnvDbConfig
-    ? $"Server={envDbServer};Database={envDbName};User Id={envDbUser ?? "sa"};Password={envDbPassword ?? string.Empty};TrustServerCertificate=True;Encrypt={envDbEncrypt};Trusted_Connection={envTrustedConnection};"
-    : (config.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Thiáº¿u cáº¥u hÃ¬nh ConnectionStrings:DefaultConnection hoáº·c biáº¿n DB_* trong .env"));
+    var connectionString = hasEnvDbConfig
+        ? BuildConnectionStringFromEnv(
+            envDbServer!,
+            envDbName!,
+            envDbUser,
+            envDbPassword,
+            envDbEncrypt,
+            envTrustedConnection)
+        : (config.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Thieu cau hinh ConnectionStrings:DefaultConnection hoac bien DB_* trong .env"));
 
 // =====================================================
 // DEPENDENCY INJECTION
@@ -186,9 +205,13 @@ builder.Services.AddSwaggerGen(options =>
 // =====================================================
 var app = builder.Build();
 
-// Apply EF Core migrations automatically at startup
-using (var scope = app.Services.CreateScope())
+// Apply EF Core migrations only when explicitly enabled.
+var autoMigrate = bool.TryParse(Environment.GetEnvironmentVariable("DB_AUTO_MIGRATE"), out var shouldMigrate)
+    && shouldMigrate;
+
+if (autoMigrate)
 {
+    using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppMovieTickerDbContext>();
     dbContext.Database.Migrate();
 }
@@ -245,5 +268,42 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
+}
+
+static string BuildConnectionStringFromEnv(
+    string server,
+    string database,
+    string? user,
+    string? password,
+    string encryptRaw,
+    string trustedConnectionRaw)
+{
+    var useTrustedConnection = bool.TryParse(trustedConnectionRaw, out var trusted) && trusted;
+    var encrypt = bool.TryParse(encryptRaw, out var enc) && enc;
+
+    var builder = new SqlConnectionStringBuilder
+    {
+        DataSource = server,
+        InitialCatalog = database,
+        Encrypt = encrypt,
+        TrustServerCertificate = true
+    };
+
+    if (useTrustedConnection)
+    {
+        builder.IntegratedSecurity = true;
+    }
+    else
+    {
+        if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(password))
+        {
+            throw new InvalidOperationException("DB_USER va DB_PASSWORD bat buoc khi DB_TRUSTED_CONNECTION=false.");
+        }
+
+        builder.UserID = user;
+        builder.Password = password;
+    }
+
+    return builder.ConnectionString;
 }
 
