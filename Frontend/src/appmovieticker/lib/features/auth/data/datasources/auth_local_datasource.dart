@@ -7,9 +7,14 @@ abstract class AuthLocalDataSource {
   Future<String?> getToken();
   Future<void> cacheUserProfile({
     int? id,
+    int? accountId,
     String? fullName,
     String? email,
     String? phone,
+    String? gender,
+    String? dateOfBirth,
+    String? address,
+    String? avatarUrl,
   });
   Future<Map<String, dynamic>?> getUserProfile();
   Future<void> clearToken();
@@ -33,15 +38,25 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheUserProfile({
     int? id,
+    int? accountId,
     String? fullName,
     String? email,
     String? phone,
+    String? gender,
+    String? dateOfBirth,
+    String? address,
+    String? avatarUrl,
   }) {
     final data = {
       'id': id,
+      'accountId': accountId,
       'fullName': fullName,
       'email': email,
       'phone': phone,
+      'gender': gender,
+      'dateOfBirth': dateOfBirth,
+      'address': address,
+      'avatarUrl': avatarUrl,
     };
     return sharedPreferences.setString('auth_profile', jsonEncode(data));
   }

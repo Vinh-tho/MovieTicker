@@ -5,6 +5,7 @@ import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/pages/register_page.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../pages/nearby_cinemas_page.dart';
+import '../pages/user_info_management_page.dart';
 
 Future<void> showMovieMenuDialog(
   BuildContext context, {
@@ -71,7 +72,14 @@ Future<void> showMovieMenuDialog(
                     _TopActionIcon(
                       icon: Icons.settings_outlined,
                       scale: scale,
-                      onTap: () => Navigator.of(dialogContext).pop(),
+                      onTap: () {
+                        Navigator.of(dialogContext).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const UserInfoManagementPage(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
